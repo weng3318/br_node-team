@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <script src="./lib/jquery-3.4.1.js"></script>
+  </head>
+  <body>
+    <div id="info"></div>
+    <button>Click</button>
+    <script>
+      $("button").click(function() {
+        console.log("click!");
+        const obj = {
+          name: "31桑",
+          level: "書評家",
+          info: "為這個世界獻上美好祝福"
+        };
+        // 第一個參數為url，第二參數為整個物件
+        fetch("/body_form2", {
+            // 要送的資料是什麼
+          body: JSON.stringify(obj),
+          headers: {
+              // 設定屬性名稱、屬性值
+            "content-type": "application/json"
+          },
+          method: "POST"
+        })
+          .then(response => {
+            return response.json();
+          })
+          .then(obj => {
+            $("#info").text(JSON.stringify(obj));
+          });
+      });
+    </script>
+  </body>
+</html>

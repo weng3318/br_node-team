@@ -1,0 +1,22 @@
+<%- include('./navbar') %>
+        <table class="table">
+                <thead class="thead-dark">
+                  <tr> 
+                    <th scope="col"><%= sales[0].level %></th>
+                    <th scope="col">姓名</th>
+                    <th scope="col">書籍</th>
+                  </tr>
+                </thead>
+              <table class="table">
+                <tbody>
+                  <% for(let i=0; i<sales.length;i++) { %>
+                  <tr>
+                    <td><%= sales[i].id %></td>
+                    <td><%= sales[i].name %></td>
+                    <td><%- sales[i].info %></td>
+                  </tr>
+                  <% } %>
+                </tbody>
+              </table>
+</body>
+</html>
