@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Document</title>
-    <!-- <script src="./lib/jquery-3.4.1.js"></script> -->
+    <script src="./lib/jquery-3.4.1.js"></script>
   </head>
   <body>
     <div id="info"></div>
     <button>Click</button>
     <script>
-      let btn = document.querySelector("button");
-      btn.addEventListener("click", function() {
+      $("button").click(function() {
         console.log("click!");
         const obj = {
           name: "31桑",
@@ -21,24 +20,21 @@
         };
         // 第一個參數為url，第二參數為整個物件
         fetch("/body_form2", {
-          // 要送的資料是什麼
+            // 要送的資料是什麼
           body: JSON.stringify(obj),
           headers: {
-            // 設定屬性名稱、屬性值
+              // 設定屬性名稱、屬性值
             "content-type": "application/json"
           },
           method: "POST"
         })
-        // 將接受到的資料轉化成json格式，或者text字串也行
           .then(response => {
             return response.json();
           })
-        // #第二個 then 裡的data才是真正的json物件#
-        // 如果沒透過 then 基本上也只是個 Promise 物件而已!
           .then(obj => {
             $("#info").text(JSON.stringify(obj));
           });
-        });
+      });
     </script>
   </body>
 </html>
