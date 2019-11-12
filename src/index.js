@@ -11,10 +11,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // 給予路由解析JSON的能力!
 app.use(bodyParser.json());
 // 上傳檔案的套件 multer
-const multer =require('multer')
+const multer = require("multer");
 // 要設定暫存資料夾
-const upload = multer({dest:'tmp_upload/'})
-const fs = require('fs')
+const upload = multer({ dest: "tmp_upload/" });
+// 搬移資料用，相當於拷貝
+const fs = require("fs");
 
 // 設定樣版引擎 EJS
 app.set("view engine", "ejs");
@@ -70,32 +71,55 @@ app.put("/body_form2", (req, res) => {
 });
 
 // 上傳檔案範例 設定middleware → upload.single('avatar')
-app.post('/try-upload',upload.single('avatar'),(req,res)=>{
-  // 單一個檔案用single('前端給這欄位，後端接受欄位')，查看的話用file不用加s
-  console.log(req.file)
-  res.send('上傳檔案OK!')
+// 單一個檔案用single('前端給這欄位，後端接受欄位')，查看的話用file不用加s
+app.post("/try_upload", upload.single("avatar"), (req, res) => {
+  if (req.file && req.file.originalname) {
+    console.log(req.file);
+    switch (req.file.mimetype) {
+      case "image/png":
+      case "image/jpeg":
+        // 讀取上傳檔案的名字、連同路徑的來源
+        fs.createReadStream(req.file.path).pipe(
+          // 拷貝檔案至 指定位置
+          fs.createWriteStream("public/img/" + req.file.originalname)
+        );
+        res.send("ok");
+        break;
+      default:
+        return res.send("bad file type");
+    }
+  } else {
+    res.send("no upload！");
+  }
+});
+// 錄製_2019_09_25_09_09_15_44.mp4
+// node比較少用get參數，取而代之，以此方法使用更強，原因是
+// "SEO"路徑的強度會比參數還要強
+app.get("/my_params/*?/*?",(req,res)=>{
+  res.json(req.params)
+  console.log('路徑會比參數強'+req.params)
+  res.send('路徑設定')
 })
-// -------------------------------------
-// app.post('/try-upload', upload.single('avatar'), (req, res) => {
-//   if (req.file && req.file.originalname) {
-//       console.log(req.file);
-//       switch (req.file.mimetype) {
-//           case 'image/png':
-//           case 'image/jpeg':
-//               fs.createReadStream(req.file.path)
-//                   .pipe(
-//                       fs.createWriteStream('public/img/' + req.file.originalname)
-//                   );
-//               res.send('ok');
-//               break;
-//           default:
-//               return res.send('bad file type');
-//       }
-//   }
-//   else {
-//       res.send('no upload');
-//   }
-// });
+
+app.get(/^\/09\d{2}\-?\d{3}-?\d{3}$/,(req,res)=>{
+  // 取得資料的順序再進行切割，才會正確去除與獲得指定數字
+  let str = req.url.slice(1)
+  // slice(1)為跳脫數字表達式自然產出的/
+  // str = str.slice(1,13)
+  str = str.split('?')[0]
+  // 刪除掉不必顯示出來的字元('-')
+  str = str.split('-').join('')
+  res.send('<h1>手機號碼'+str)
+})
+
+
+
+
+
+
+
+
+
 
 
 
