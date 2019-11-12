@@ -14,6 +14,7 @@
       let btn = document.querySelector("button");
       btn.addEventListener("click", function() {
         console.log("click!");
+        // 準備一些東西..
         const obj = {
           name: "31桑",
           level: "書評家",
@@ -27,6 +28,7 @@
             // 設定屬性名稱、屬性值
             "content-type": "application/json"
           },
+          // 定義方法
           method: "POST"
         })
         // 將接受到的資料轉化成json格式，或者text字串也行

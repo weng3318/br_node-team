@@ -10,6 +10,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 // 給予路由解析JSON的能力!
 app.use(bodyParser.json());
+// 上傳檔案的套件 multer
+const multer =require('multer')
+// 要設定暫存資料夾
+const upload = multer({dest:'tmp_upload/'})
+const fs = require('fs')
 
 // 設定樣版引擎 EJS
 app.set("view engine", "ejs");
@@ -63,6 +68,36 @@ app.post("/body_form2", (req, res) => {
 app.put("/body_form2", (req, res) => {
   res.send("put:body_form2");
 });
+
+// 上傳檔案範例 設定middleware → upload.single('avatar')
+app.post('/try-upload',upload.single('avatar'),(req,res)=>{
+  // 單一個檔案用single('前端給這欄位，後端接受欄位')，查看的話用file不用加s
+  console.log(req.file)
+  res.send('上傳檔案OK!')
+})
+// -------------------------------------
+// app.post('/try-upload', upload.single('avatar'), (req, res) => {
+//   if (req.file && req.file.originalname) {
+//       console.log(req.file);
+//       switch (req.file.mimetype) {
+//           case 'image/png':
+//           case 'image/jpeg':
+//               fs.createReadStream(req.file.path)
+//                   .pipe(
+//                       fs.createWriteStream('public/img/' + req.file.originalname)
+//                   );
+//               res.send('ok');
+//               break;
+//           default:
+//               return res.send('bad file type');
+//       }
+//   }
+//   else {
+//       res.send('no upload');
+//   }
+// });
+
+
 
 // 404設定頁面
 app.use((req, res) => {
