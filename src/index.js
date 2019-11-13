@@ -20,13 +20,23 @@ const fs = require("fs");
 const session = require('express-session')
 // #mysql套件安裝，準備連線環境#
 const mysql = require('mysql')
+// const db = mysql.createConnection({
+//   host:'localhost',
+//   user:'Arwen',
+//   password:'4595',
+//   database:'ac_pbook'
+// })
+const bluebird = require('bluebird');
+// ruby的資料庫
 const db = mysql.createConnection({
-  host:'localhost',
-  user:'Arwen',
-  password:'4595',
-  database:'pbook'
+  host: "192.168.27.186",
+  user: "root",
+  password: "root",
+  database: "pbook"
 })
-
+// 連線
+db.connect()
+bluebird.promisifyAll()
 // 靜態頁面，到此內容資料夾就不會進之後的路由，一般設定一個就好
 app.use(express.static("public"));
 // 
@@ -143,7 +153,6 @@ app.get(/^\/09\d{2}\-?\d{3}-?\d{3}$/,(req,res)=>{
 
 // todo..
 // app.router，all.
-
 // 路由模組化方式一，當成函式呼叫
 const admin1 = require(__dirname + '/admins/admin1');
 admin1(app);
@@ -152,10 +161,30 @@ admin1(app);
 app.use( require(__dirname + '/admins/admin2') );
 app.use('/admin3', require(__dirname + '/admins/admin3'));
 
-
-
-
-
+// 資料庫連線，使用sql語法，middleware要注意的是
+// #必須跟res.render的名稱一致，但不需要/，否則會找不到頁面
+app.get('/br_db',(req,res)=>{
+  // LIMIT依數量倒出資料
+  // const sql = "SELECT * FROM `vb_books` LIMIT 0,5"
+  // db.query(sql,(error,results,fields)=>{
+  // 搜尋用的語法
+  const sql = "SELECT * FROM `vb_books` WHERE `name` LIKE ? "
+  // node的抓取結果就是固定的fetchAll一次弄出來，不用分fetch或fetchAll
+  db.query(sql,['%日本%'],(error,results,fields)=>{
+    // 報錯，原則上需要錯誤處理，可用if判斷有無error
+    console.log(error)
+    // 資料顯示
+    console.log(results)
+    // 欄位訊息
+    console.log(fields)
+    // 自動告知前端JSON格式，write、end、render
+    // res.json(results)
+    res.render('br_db', {
+            rows: results
+        });
+  })
+  // res.send('放這裡會有問題')
+})
 
 
 
@@ -165,6 +194,7 @@ app.use('/admin3', require(__dirname + '/admins/admin3'));
 app.use((req, res) => {
   res.type("text/plain");
   res.status(404);
+  // send 輸出單純的HTML
   res.send(`404 找不到頁面`);
 });
 

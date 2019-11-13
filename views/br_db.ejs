@@ -1,0 +1,23 @@
+<%- include('./navbar') %>
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">書名</th>
+                <th scope="col">書籍編號</th>
+                <th scope="col">作者</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let br of rows){ %>
+            <tr>
+                <td><%= br.sid %></td>
+                <td><%= br.name %></td>
+                <td><%= br.pic %></td>
+                <td><%= br.author %></td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>

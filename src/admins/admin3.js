@@ -5,7 +5,7 @@ const router = express.Router();
 router.route("/member/edit/:id")
   // 沒有定義方法，經路由進來的訪客在做判斷執行
   // 這裡面包的是middleware的格式!
-  .all((req, res, next) => {
+  .all(( req, res, next ) => {
     // res.locals是關鍵物件，可以串流下去
     res.locals.會員表單 = {
       // #這裡要撈資料庫#
@@ -17,7 +17,7 @@ router.route("/member/edit/:id")
     next();
   })
   // 上方有定義路由了，後面只需放參數不用路徑
-  .get((req,res) => {
+  .get(( req, res ) => {
     res.send("GET:" + JSON.stringify(res.locals))
     // const obj = {
     //   baseUrl: req.baseUrl,
@@ -25,7 +25,8 @@ router.route("/member/edit/:id")
     //   data: res.locals.memberData
     // };
   })
-  .post((req,res) => {
+  // 使用postman測試
+  .post(( req, res ) => {
     res.send("POST:" + JSON.stringify(res.locals));
   });
 
