@@ -36,7 +36,7 @@ const db = mysql.createConnection({
 })
 // 連線
 db.connect()
-bluebird.promisifyAll()
+bluebird.promisifyAll(db)
 // 靜態頁面，到此內容資料夾就不會進之後的路由，一般設定一個就好
 app.use(express.static("public"));
 // 
@@ -170,6 +170,7 @@ app.get('/br_db',(req,res)=>{
   // 搜尋用的語法
   const sql = "SELECT * FROM `vb_books` WHERE `name` LIKE ? "
   // node的抓取結果就是固定的fetchAll一次弄出來，不用分fetch或fetchAll
+  // 以下為callback函式，資料需要等待才能獲得
   db.query(sql,['%日本%'],(error,results,fields)=>{
     // 報錯，原則上需要錯誤處理，可用if判斷有無error
     console.log(error)
@@ -186,7 +187,17 @@ app.get('/br_db',(req,res)=>{
   // res.send('放這裡會有問題')
 })
 
-
+app.get('/br_db2/:page?',(req,res)=>{
+  let page = req.params.page || 1
+  let perPage = 5
+  db.queryAsync("SELECT COUNT(1) total FROM `vb_books`")
+  .then(result=>{
+    res.json(result)
+  })
+  .catch(error=>{
+    res.send(error)
+  })
+})
 
 
 
