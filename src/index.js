@@ -188,9 +188,10 @@ app.get('/br_db',(req,res)=>{
 })
 
 app.get('/br_db2/:page?',(req,res)=>{
-  let page = req.params.page || 1
-  let perPage = 5
+  // let page = req.params.page || 1
+  // let perPage = 5
   db.queryAsync("SELECT COUNT(1) total FROM `vb_books`")
+  // db.queryAsync("SELECT * FROM `vb_books`")
   .then(result=>{
     res.json(result)
   })
