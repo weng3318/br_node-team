@@ -4,12 +4,6 @@ const express = require("express");
 const app = express(); //本身是函式
 // 取得POST資料 處理表單用
 const bodyParser = require("body-parser");
-// const urlencodedParser = bodyParser.urlencoded({extended:false})
-// 改成這樣就不用middleware
-app.use(bodyParser.urlencoded({ extended: false }));
-// parse application/json
-// 給予路由解析JSON的能力!
-app.use(bodyParser.json());
 // 上傳檔案的套件 multer
 const multer = require("multer");
 // 要設定暫存資料夾
@@ -20,27 +14,63 @@ const fs = require("fs");
 const session = require('express-session')
 // #mysql套件安裝，準備連線環境#
 const mysql = require('mysql')
-// const db = mysql.createConnection({
-//   host:'localhost',
-//   user:'Arwen',
-//   password:'4595',
-//   database:'ac_pbook'
-// })
+// 家裡用的資料庫
 const bluebird = require('bluebird');
-// ruby的資料庫
 const db = mysql.createConnection({
-  host: "192.168.27.186",
-  user: "root",
-  password: "root",
-  database: "pbook"
+  host:'localhost',
+  user:'Arwen',
+  password:'4595',
+  database:'pbook'
 })
-// 連線
-db.connect()
-bluebird.promisifyAll(db)
-// 靜態頁面，到此內容資料夾就不會進之後的路由，一般設定一個就好
-app.use(express.static("public"));
-// 
-app.use(session({
+// ruby的資料庫
+// const db = mysql.createConnection({
+  //   host: "192.168.27.186",
+  //   user: "root",
+  //   password: "root",
+  //   database: "pbook"
+  // })
+  // 跨網域套件
+  const cors = require('cors')
+  
+  // 連線
+  db.connect()
+  // const urlencodedParser = bodyParser.urlencoded({extended:false})
+  // 改成這樣就不用middleware
+  app.use(bodyParser.urlencoded({ extended: false }));
+  // parse application/json
+  // 給予路由解析JSON的能力!
+  app.use(bodyParser.json());
+  
+  bluebird.promisifyAll(db)
+  // 先cd至目標資料夾並啟動http-server 8080預設
+  // cors作用：會獲得一個middleware，cors會當作function呼叫
+  // 目的是偽裝成客戶!這可以跨網域伺服取用資料，此範例無須 cookie 跟 session
+  app.use(cors())
+  
+  // 更改為白名單，undefined必須
+  const whitelist = ['http://localhost:5000','http://localhost:8080','http://localhost:3000']
+  const corsOptions = {
+    credentials:true,
+    origin:function (origin,callback){
+      console.log('origin' + origin)
+      // 不加undefined要加 !origin
+      if(whitelist.indexOf(origin) !==-1 || !origin){
+        // 允許
+        callback(null,true)}
+        else {
+          // 直接報錯會導致伺服器停下
+          // callback(new Error ('not allowed by CORS'))
+          // 不允許報錯
+          callback(null,false)
+        }
+      }
+    }
+    app.use(cors(corsOptions))
+
+  // 靜態頁面，到此內容資料夾就不會進之後的路由，一般設定一個就好
+  app.use(express.static("public"));
+  // 
+  app.use(session({
   // 前兩項非必要條件
   // ↓設定false，表示client端沒用到session就不會有暫存作用
   saveUninitialized:false,
@@ -160,47 +190,75 @@ admin1(app);
 // 方式二跟三較為推薦，以middleware呼叫
 app.use( require(__dirname + '/admins/admin2') );
 app.use('/admin3', require(__dirname + '/admins/admin3'));
+app.use('/brBookcase', require(__dirname + '/brBookcase'));
+app.use('/brReviewerList', require(__dirname + '/brReviewerList'));
 
 // 資料庫連線，使用sql語法，middleware要注意的是
 // #必須跟res.render的名稱一致，但不需要/，否則會找不到頁面
-app.get('/br_db',(req,res)=>{
+app.get('/try_db',(req,res)=>{
   // LIMIT依數量倒出資料
-  // const sql = "SELECT * FROM `vb_books` LIMIT 0,5"
+  const sql = "SELECT * FROM `vb_books` LIMIT 50,5"
   // db.query(sql,(error,results,fields)=>{
-  // 搜尋用的語法
-  const sql = "SELECT * FROM `vb_books` WHERE `name` LIKE ? "
-  // node的抓取結果就是固定的fetchAll一次弄出來，不用分fetch或fetchAll
-  // 以下為callback函式，資料需要等待才能獲得
-  db.query(sql,['%日本%'],(error,results,fields)=>{
-    // 報錯，原則上需要錯誤處理，可用if判斷有無error
-    console.log(error)
+    // 搜尋用的語法
+    // const sql = "SELECT * FROM `vb_books` WHERE `name` LIKE ? "
+    // node的抓取結果就是固定的fetchAll一次弄出來，不用分fetch或fetchAll
+    // 以下為callback函式，資料需要等待才能獲得
+    db.query(sql,['%日本%'],(error,results,fields)=>{
+      // 報錯，原則上需要錯誤處理，可用if判斷有無error
+      console.log(error)
     // 資料顯示
     console.log(results)
     // 欄位訊息
     console.log(fields)
     // 自動告知前端JSON格式，write、end、render
     // res.json(results)
-    res.render('br_db', {
-            rows: results
+    res.render('try_db', {
+      數量: results
         });
   })
   // res.send('放這裡會有問題')
 })
 
-app.get('/br_db2/:page?',(req,res)=>{
-  // let page = req.params.page || 1
-  // let perPage = 5
+app.get('/try_db2/:page?', (req, res)=> {
+  let page = req.params.page || 1;
+  let perPage = 5;
+  const output = {};
+
   db.queryAsync("SELECT COUNT(1) total FROM `vb_books`")
-  // db.queryAsync("SELECT * FROM `vb_books`")
-  .then(result=>{
-    res.json(result)
-  })
-  .catch(error=>{
-    res.send(error)
-  })
+      .then(results=>{
+          //res.json(results);
+          output.總筆數 = results[0].total;
+          return db.queryAsync(`SELECT * FROM vb_books LIMIT ${(page-1)*perPage}, ${perPage}`);
+      })
+      .then(results=>{
+          // output.rows = results;
+          // res.json(output);
+          // 測試大專資料傳輸
+          res.json(results);
+      })
+      .catch(error=>{
+          console.log(error);
+          res.send(error);
+      });
+});
+// todo..先用
+app.get('/session1', (req, res)=>{
+  req.session.my_views = req.session.my_views || 0;
+  req.session.my_views++;
+
+  res.json({
+      aa: 'hello',
+      'my views': req.session.my_views
+  });
+});
+// 造訪次數，這邊可以注意，使用post拿不到值
+app.get('/session2',(req,res)=>{
+  req.session.views = req.session.views||1
+  req.session.views++
+  res.json({
+    qq: 'hi',
+    views:req.session.views})
 })
-
-
 
 // 404設定頁面
 app.use((req, res) => {
