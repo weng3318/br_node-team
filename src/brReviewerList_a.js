@@ -12,7 +12,7 @@ const db = mysql.createConnection({
 db.connect()
 bluebird.promisifyAll(db)
 
-const perPage = 9
+const perPage = 5
 brReviewerList.get('/:page?/:keyword?',(req,res)=>{
     const output = {};
     output.params = req.params
