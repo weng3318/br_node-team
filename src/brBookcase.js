@@ -32,6 +32,7 @@ brBookcase.get('/:page?/:keyword?', (req, res)=> {
             if(page<1) page = 1
             if(page>output.totalPage) page = output.totalPage
             output.page = page
+            
 
             return db.queryAsync('SELECT * FROM `br_reviewerlist` LIMIT '+(page-1)*perPage+','+(perPage))
         })
