@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="/public/lib/jquery-3.4.1.js"></script>
-    <script src="/public/lib/loadsh.js"></script>
+    <script src="../public/lib/loadsh.js"></script>
+    <script src="../public/lib/jquery-3.4.1.js"></script>
 </head>
 <body>
 
@@ -17,7 +17,15 @@
         </form>
     </div>
     <nav aria-label="Page navigation example">
-        <ul class="pagination">
+        <ul class="pagination">    
+        <!-- <a class="page-link" href="#" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span></a>
+
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+
+        <a class="page-link" href="#" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span></a>             -->
         </ul>
     </nav>
 
@@ -52,6 +60,7 @@
 </div>
 
 <script>
+    // ---------------------------------------------------------
     const pagination = $('.pagination');
     const t_content = $('#t_content');
     const pagination_str = `
@@ -74,67 +83,63 @@
     const table_row_fn = _.template(table_row_str);
     let ori_data;
     let ori_keyword = '';
-
-    const myHashChange = function () {
-        console.log(location.hash);
-        let hash = location.hash.slice(2);
-        let hash_ar = hash.split('/');
-        let page, keyword;
+    // ---------------------------------------------------------
+    //固定作法 定義後監聽
+    const myHashChange =  function(){
+        console.log(location.hash)
+        // url從第2格開始切，模擬前端，/之後的井字及斜線去除
+        // 從第二個開始抓
+        let hash = location.hash.slice(2)
+        // 斜線做分割
+        let hash_ar = hash.split('/')
+        // 判斷有沒有第一格
+        let page, keyword
+        // 頁碼
         if(hash_ar[0]){
-            page = parseInt(hash_ar[0]);
+            // 頁數轉換成整數(數字)
+            page = parseInt(hash_ar[0])
         }
+        // 關鍵字搜尋不用轉整數(數字)
         if(hash_ar[1]){
-            keyword = hash_ar[1];
-            ori_keyword = keyword;
-        } else {
-            ori_keyword = '';
+            keyword = hash_ar[1]
         }
-        console.log({page, keyword});
-        let url = `/address-book`;
-        if(page){
-            url += `/${page}`;
-            if(keyword){
-                url += `/${keyword}`;
-            }
-        }
-        console.log(url);
-        fetch(url)
-            .then(response=>{
-                return response.json();
-            })
-            .then(obj=>{
-                pagination.html('');
-                t_content.html('');
+        // 反饋頁數(page)及關鍵字(keyword)
+        console.log({page, keyword})
 
-                ori_data = obj;
+        // 用上方訊息組裝成要發fetch出去的方式
+        let url = `/address-book/`
+        if(page){url += `${page}`
+            if(keyword){url += `${keyword}`}
+    }
+    // 只要改變#hash就會連動到此，到這邊就會發fetch出去
+        console.log(url)
 
-                for(let i=1; i<=obj.totalPage; i++){
-                    let active = i===obj.page ? 'active' : '';
-                    pagination.append( pagination_fn({
-                        i:i,
-                        active:active,
-                        keyword: ori_keyword
-                    }) );
+    // 這邊範例都是以get為主
+    fetch(url)
+    .then(response=>{
+        // 回來的格式是json
+        return response.json()
+    })
+        // 到這裡拿到的是一個obj
+        .then(obj=>{
+            // 進來這裡時，先清除頁面上的畫面
+            pagination.html('');
+            t_content.html('');
+            // 處理的地方，之前先在上方宣告一個全域變數來裝 (ori_data)
+            ori_data = obj
+            for(let i=0; i<=obj.totalPage; i++){
+                let active = i===obj.page ? 'active' : '';
+                pagination.append(pagination_fn({i:i, active:active}));
                 }
 
-                for(let item of obj.rows){
-                    t_content.append(table_row_fn(item));
-                }
+        }) 
+    // 偵測轉頁訊息
+    window.addEventListener('hashchange',myHashChange)
+    
+    myHashChange()
 
-                $('#search-input').val(obj.params.keyword);
-            })
-    };
-
-    window.addEventListener('hashchange', myHashChange);
-    myHashChange();
-
-    $('#search-btn').click(function(){
-        let search = $('#search-input').val();
-
-        location.href = '#/1/' + search;
-
-    });
 </script>
+
 
 </body>
 </html>

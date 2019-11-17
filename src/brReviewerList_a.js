@@ -5,8 +5,8 @@ const brReviewerList = express.Router();
 
 const db = mysql.createConnection({
     host:'localhost',
-    user:'Arwen',
-    password:'4595',
+    user:'root',
+    password:'root',
     database:'pbook'
 })
 db.connect()
